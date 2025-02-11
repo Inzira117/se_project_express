@@ -1,0 +1,23 @@
+{
+  "name": "se_project_express",
+  "version": "1.0.0",
+  "description": "weather app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tripleten-com/se_project_express.git"
+  },
+  "author": "Inzira A.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tripleten-com/se_project_express/issues"
+  },
+  "homepage": "https://github.com/tripleten-com/se_project_express#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {}
+}
