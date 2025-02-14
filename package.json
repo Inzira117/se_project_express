@@ -4,20 +4,31 @@
   "description": "weather app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "npx eslint .",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tripleten-com/se_project_express.git"
+    "url": "git+https://github.com/Inzira117/se_project_express.git"
   },
   "author": "Inzira A.",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tripleten-com/se_project_express/issues"
+    "url": "https://github.com/Inzira117/se_project_express/issues"
   },
-  "homepage": "https://github.com/tripleten-com/se_project_express#readme",
+  "homepage": "https://github.com/Inzira117/se_project_express.git#readme",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "mongoose": "^8.10.0",
+    "validator": "^13.12.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-import": "^2.31.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^2.8.8"
+  }
 }
