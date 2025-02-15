@@ -1,4 +1,5 @@
 const clothingItem = require("../models/clothingItem");
+const BAD_REQUEST_STATUS_CODE = require("../utils/errors");
 
 const getItems = (req, res) => {
   clothingItem
@@ -11,17 +12,40 @@ const getItems = (req, res) => {
 };
 
 const createItem = (req, res) => {
-  const { name, weather, imageURL } = req.body;
+  const { name, weather, imageUrl } = req.body;
 
   clothingItem
-    .create({ name, weather, imageURL })
+    .create({ name, weather, imageUrl })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: err.message });
       }
       return res.status(500).send({ message: err.message });
+    });
+};
+
+const updateItem = (req, res) => {
+  const { itemId, imageUrl } = req.params;
+  clothingItem
+    .findByIdAndUpdate(itemId, { $set: { imageUrl } })
+    .orFail()
+    .then((item) => {
+      res.status(200).send({ data: item });
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(404).send({ message: "Item not found" });
+      } else if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: "Invalid item ID" });
+      }
+      return res.status(500).send({ message: "Internal server error" });
     });
 };
 
@@ -30,18 +54,37 @@ const deleteItem = (req, res) => {
   clothingItem
     .findByIdAndDelete(itemId)
     .orFail()
-    .then((deletedItem) => {
-      res.status(200).send({ item: deletedItem });
+    .then((item) => {
+      res.status(200).send({ data: item });
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "Item not found" });
       } else if (err.name === "CastError") {
-        return res.status(400).send({ message: "Invalid item ID" });
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: "Invalid item ID" });
       }
       return res.status(500).send({ message: "Internal server error" });
     });
 };
 
-module.exports = { getItems, createItem, deleteItem };
+const likeItem = (req, res) => {
+  clothingItem
+    .findByIdAndUpdate(
+      req.params.itemId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true }
+    )
+    .orFail()
+    .then((item) => {
+      res.status(200).send({ data: item });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(BAD_REQUEST_STATUS_CODE).send({ message: "Invalid item ID" });
+    });
+};
+
+module.exports = { getItems, createItem, updateItem, deleteItem, likeItem };
