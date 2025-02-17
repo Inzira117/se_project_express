@@ -51,18 +51,16 @@ const deleteItem = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .send({ message: "Item not found" });
+      if (err.statusCode === NOT_FOUND_ERROR_CODE) {
+        res.status(NOT_FOUND_ERROR_CODE).send({ message: "Item not found" });
       } else if (err.name === "CastError") {
-        return res
+        res
           .status(BAD_REQUEST_STATUS_CODE)
           .send({ message: "Invalid item ID" });
-      }
-      return res
-        .status(SERVER_ERROR_STATUS_CODE)
-        .send({ message: "Internal server error" });
+      } else
+        res
+          .status(SERVER_ERROR_STATUS_CODE)
+          .send({ message: "Internal server error" });
     });
 };
 
@@ -82,7 +80,9 @@ const likeItem = (req, res) => {
       res.status(200).send({ data: item });
     })
     .catch((err) => {
-      console.error(err.name);
+      if (err.statusCode === NOT_FOUND_ERROR_CODE) {
+        console.error(err.name);
+      }
       if (err.name === "CastError") {
         res
           .status(BAD_REQUEST_STATUS_CODE)
