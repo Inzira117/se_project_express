@@ -41,7 +41,11 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   clothingItem
     .findByIdAndDelete(itemId)
-    .orFail(new Error("Item ID not found"))
+    .orFail(() => {
+      const error = new Error("Item ID not found");
+      error.statusCode = NOT_FOUND_ERROR_CODE;
+      throw error;
+    })
     .then((item) => {
       res.status(200).send({ data: item });
     })
@@ -69,7 +73,11 @@ const likeItem = (req, res) => {
       { $addToSet: { likes: req.user._id } },
       { new: true }
     )
-    .orFail(new Error("Item ID not found"))
+    .orFail(() => {
+      const error = new Error("Item ID not found");
+      error.statusCode = NOT_FOUND_ERROR_CODE;
+      throw error;
+    })
     .then((item) => {
       res.status(200).send({ data: item });
     })
