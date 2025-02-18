@@ -81,7 +81,7 @@ const likeItem = (req, res) => {
     })
     .catch((err) => {
       if (err.statusCode === NOT_FOUND_ERROR_CODE) {
-        res.status(NOT_FOUND_ERROR_CODE);
+        res.status(NOT_FOUND_ERROR_CODE).send({ message: "Item not found" });
       }
       if (err.name === "CastError") {
         res
