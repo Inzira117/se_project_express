@@ -1,6 +1,7 @@
 const clothingItem = require("../models/clothingItem");
 const {
   BAD_REQUEST_STATUS_CODE,
+  FORBIDDEN_STATUS_CODE,
   NOT_FOUND_ERROR_CODE,
   SERVER_ERROR_STATUS_CODE,
 } = require("../utils/errors");
@@ -38,7 +39,9 @@ const createItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.params;
+  const userId = req.user.id;
+  const itemId = req.params.id;
+
   clothingItem
     .findByIdAndDelete(itemId)
     .orFail(() => {
@@ -48,6 +51,16 @@ const deleteItem = (req, res) => {
     })
     .then((item) => {
       res.status(200).send({ data: item });
+      if (item.owner.toString() !== userId) {
+        res.status(FORBIDDEN_STATUS_CODE).send({
+          message: err.message,
+        });
+      }
+      return clothingItem
+        .findByIdAndDelete(itemId)
+        .then(() =>
+          res.status(200).send({ message: "Item successfully deleted" })
+        );
     })
     .catch((err) => {
       console.error(err);
