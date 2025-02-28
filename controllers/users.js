@@ -24,27 +24,47 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
+  if (!email) {
+    return res
+      .status(BAD_REQUEST_STATUS_CODE)
+      .send({ message: "Email is required" });
+  }
 
-  bcrypt
-    .hash(password, 10)
+  User.findOne({ email })
+    .then((existingUser) => {
+      if (existingUser) {
+        const error = new Error("Duplicated");
+        error.code = 11000;
+        throw error;
+      }
+      return bcrypt.hash(password, 10);
+    })
     .then((hash) => User.create({ name, avatar, email, password: hash }))
-    .then((user) => res.status(201).send(user))
+    .then((user) => {
+      const createUser = user.toObject();
+      delete createUser.password;
+      return res.status(200).send(createUser);
+    })
     .catch((err) => {
       console.error(err);
       if (err.code === 11000) {
-        res.status(CONFLICT_STATUS_CODE).send({ message: err.message });
+        return res
+          .status(CONFLICT_STATUS_CODE)
+          .send({ message: "Failed Request: Email already exists." });
       }
       if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST_STATUS_CODE).send({ message: err.message });
-      } else
-        res
-          .status(SERVER_ERROR_STATUS_CODE)
-          .send({ message: "An error has occurred on the server." });
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: "Failed Request: Invalid data provided." });
+      }
+      return res.status(SERVER_ERROR_STATUS_CODE).send({
+        message: "Failed Request: An error has occurred on the server.",
+      });
     });
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.user.id;
+  const userId = req.user._id;
   User.findById(userId)
     .select("+password")
     .orFail()
@@ -65,15 +85,29 @@ const getCurrentUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
+  if (email || !password) {
+    return res
+      .status(BAD_REQUEST_STATUS_CODE)
+      .send({ message: "Email and password required" });
+  }
+
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(200).send(token);
+      res.status(200).json({ jwt: token });
     })
     .catch((err) => {
-      res.status(UNAUTHORIZED_STATUS_CODE).send({ message: err.message });
+      console.error(err);
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(BAD_REQUEST_STATUS_CODE)
+          .send({ message: err.message });
+      }
+      return res.status(SERVER_ERROR_STATUS_CODE).send({
+        message: "Failed Request: An error has occurred on the server.",
+      });
     });
 };
 
@@ -87,6 +121,10 @@ const updateCurrentUser = (req, res) => {
     { new: true, runValidators: true }
   )
     .select("+password")
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
+      res.status(200).send({ jwt: token });
+    })
     .then((updatedUser) => {
       if (!updatedUser) {
         return res
