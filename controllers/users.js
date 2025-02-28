@@ -29,7 +29,7 @@ const createUser = (req, res) => {
       .send({ message: "Email is required" });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
         const error = new Error("Duplicated");
@@ -64,7 +64,7 @@ const createUser = (req, res) => {
 
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
-  User.findById(userId)
+  return User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -111,27 +111,27 @@ const login = (req, res) => {
 };
 
 const updateCurrentUser = (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user._id;
   const { name, avatar } = req.body;
 
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     userId,
     { name, avatar },
     { new: true, runValidators: true }
   )
     .select("+password")
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
-      res.status(200).send({ jwt: token });
-    })
-    .then((updatedUser) => {
-      if (!updatedUser) {
+      if (!user) {
         return res
           .status(NOT_FOUND_ERROR_CODE)
           .json({ message: "User not found." });
       }
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
+
+      const updatedUser = user.toObject();
       delete updatedUser.password;
-      res.json(updatedUser);
+
+      return res.status(200).json({ jwt: token, user: updatedUser });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
