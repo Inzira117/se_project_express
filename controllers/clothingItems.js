@@ -93,9 +93,7 @@ const likeItem = (req, res) => {
       error.name = "NotFoundError";
       throw error;
     })
-    .then((item) => {
-      return res.status(200).json({ data: item });
-    })
+    .then((item) => res.status(200).json({ data: item }))
     .catch((err) => {
       if (err.name === "NotFoundError") {
         return res
@@ -103,14 +101,13 @@ const likeItem = (req, res) => {
           .json({ message: "Item not found" });
       }
       if (err.name === "CastError") {
-        res
+        return res
           .status(BAD_REQUEST_STATUS_CODE)
           .json({ message: "Invalid Item Id" });
-      } else {
-        res
-          .status(SERVER_ERROR_STATUS_CODE)
-          .json({ message: "likeItem Error" });
       }
+      return res
+        .status(SERVER_ERROR_STATUS_CODE)
+        .json({ message: "likeItem Error" });
     });
 };
 
