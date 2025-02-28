@@ -1,11 +1,10 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const User = require("../models/user.js");
+const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
 const {
   BAD_REQUEST_STATUS_CODE,
-  UNAUTHORIZED_STATUS_CODE,
   NOT_FOUND_ERROR_CODE,
   CONFLICT_STATUS_CODE,
   SERVER_ERROR_STATUS_CODE,
@@ -66,7 +65,6 @@ const createUser = (req, res) => {
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
   User.findById(userId)
-    .select("-password") // Exclude the password field
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -86,7 +84,7 @@ const getCurrentUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  if (email || !password) {
+  if (!email || !password) {
     return res
       .status(BAD_REQUEST_STATUS_CODE)
       .send({ message: "Email and password required" });
