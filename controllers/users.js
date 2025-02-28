@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const User = require("../models/User");
+const User = require("../models/user.js");
 const { JWT_SECRET } = require("../utils/config");
 
 const {
@@ -41,9 +41,9 @@ const createUser = (req, res) => {
     })
     .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
-      const createUser = user.toObject();
-      delete createUser.password;
-      return res.status(200).send(createUser);
+      const createdUser = user.toObject();
+      delete createdUser.password;
+      return res.status(200).send(createdUser);
     })
     .catch((err) => {
       console.error(err);
@@ -66,19 +66,20 @@ const createUser = (req, res) => {
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
   User.findById(userId)
-    .select("+password")
+    .select("-password") // Exclude the password field
     .orFail()
-    .then((users) => res.status(200).send(users))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
       } else if (err.name === "CastError") {
         res.status(BAD_REQUEST_STATUS_CODE).send({ message: err.message });
-      } else
+      } else {
         res
           .status(SERVER_ERROR_STATUS_CODE)
           .send({ message: "An error has occurred on the server." });
+      }
     });
 };
 

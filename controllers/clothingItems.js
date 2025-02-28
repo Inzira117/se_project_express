@@ -39,7 +39,7 @@ const createItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user._id;
   const itemId = req.params.id;
 
   clothingItem
@@ -53,7 +53,7 @@ const deleteItem = (req, res) => {
       res.status(200).send({ data: item });
       if (item.owner.toString() !== userId) {
         res.status(FORBIDDEN_STATUS_CODE).send({
-          message: err.message,
+          message: "Forbidden",
         });
       }
       return clothingItem
