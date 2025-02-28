@@ -40,7 +40,7 @@ const createItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const userId = req.user._id;
-  const itemId = req.params.itemId; // Ensure this matches your route definition
+  const { itemId } = req.params.itemId;
 
   clothingItem
     .findById(itemId)
@@ -82,7 +82,7 @@ const deleteItem = (req, res) => {
 };
 
 const likeItem = (req, res) => {
-  clothingItem
+  return clothingItem
     .findByIdAndUpdate(
       req.params.itemId,
       { $addToSet: { likes: req.user._id } },
@@ -103,11 +103,11 @@ const likeItem = (req, res) => {
           .json({ message: "Item not found" });
       }
       if (err.name === "CastError") {
-        return res
+        res
           .status(BAD_REQUEST_STATUS_CODE)
           .json({ message: "Invalid Item Id" });
       } else {
-        return res
+        res
           .status(SERVER_ERROR_STATUS_CODE)
           .json({ message: "likeItem Error" });
       }

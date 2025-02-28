@@ -126,19 +126,13 @@ const updateCurrentUser = (req, res) => {
           .status(NOT_FOUND_ERROR_CODE)
           .json({ message: "User not found." });
       }
-      //const token = jwt.sign({ _id: user._id }, JWT_SECRET);
 
-      //const updatedUser = user.toObject();
-      //delete updatedUser.password;
-
-      return res
-        .status(200)
-        .json({
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-        });
+      return res.status(200).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
