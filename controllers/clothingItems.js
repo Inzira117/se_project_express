@@ -40,40 +40,44 @@ const createItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const userId = req.user._id;
-  const itemId = req.params.id;
+  const itemId = req.params.itemId; // Ensure this matches your route definition
 
   clothingItem
-    .findByIdAndDelete(itemId)
+    .findById(itemId)
     .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.statusCode = NOT_FOUND_ERROR_CODE;
+      const error = new Error("Item not found");
+      error.statusCode = NOT_FOUND_ERROR_CODE; // Use 404 for missing items
       throw error;
     })
     .then((item) => {
-      res.status(200).send({ data: item });
       if (item.owner.toString() !== userId) {
-        res.status(FORBIDDEN_STATUS_CODE).send({
-          message: "Forbidden",
+        return res.status(FORBIDDEN_STATUS_CODE).json({
+          message: "Forbidden: You are not the owner of this item.",
         });
       }
+
       return clothingItem
         .findByIdAndDelete(itemId)
         .then(() =>
-          res.status(200).send({ message: "Item successfully deleted" })
+          res.status(200).json({ message: "Item successfully deleted" })
         );
     })
     .catch((err) => {
       console.error(err);
-      if (err.statusCode === NOT_FOUND_ERROR_CODE) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: "Item not found" });
-      } else if (err.name === "CastError") {
-        res
+
+      if (err.name === "CastError") {
+        return res
           .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "Invalid item ID" });
-      } else
-        res
-          .status(SERVER_ERROR_STATUS_CODE)
-          .send({ message: "Internal server error" });
+          .json({ message: "Invalid item ID" }); // 400 for invalid format
+      }
+      if (err.statusCode === NOT_FOUND_ERROR_CODE) {
+        return res
+          .status(NOT_FOUND_ERROR_CODE)
+          .json({ message: "Item not found" }); // 404 for missing items
+      }
+      return res
+        .status(SERVER_ERROR_STATUS_CODE)
+        .json({ message: "Internal server error" });
     });
 };
 
@@ -86,24 +90,26 @@ const likeItem = (req, res) => {
     )
     .orFail(() => {
       const error = new Error("Item ID not found");
-      error.statusCode = NOT_FOUND_ERROR_CODE;
+      error.name = "NotFoundError";
       throw error;
     })
     .then((item) => {
-      res.status(200).send({ data: item });
+      return res.status(200).json({ data: item });
     })
     .catch((err) => {
-      if (err.statusCode === NOT_FOUND_ERROR_CODE) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: "Item not found" });
+      if (err.name === "NotFoundError") {
+        return res
+          .status(NOT_FOUND_ERROR_CODE)
+          .json({ message: "Item not found" });
       }
       if (err.name === "CastError") {
-        res
+        return res
           .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "Invalid Item Id" });
+          .json({ message: "Invalid Item Id" });
       } else {
-        res
+        return res
           .status(SERVER_ERROR_STATUS_CODE)
-          .send({ message: "likeItem Error" });
+          .json({ message: "likeItem Error" });
       }
     });
 };

@@ -126,12 +126,19 @@ const updateCurrentUser = (req, res) => {
           .status(NOT_FOUND_ERROR_CODE)
           .json({ message: "User not found." });
       }
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
+      //const token = jwt.sign({ _id: user._id }, JWT_SECRET);
 
-      const updatedUser = user.toObject();
-      delete updatedUser.password;
+      //const updatedUser = user.toObject();
+      //delete updatedUser.password;
 
-      return res.status(200).json({ jwt: token, user: updatedUser });
+      return res
+        .status(200)
+        .json({
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -139,7 +146,7 @@ const updateCurrentUser = (req, res) => {
           .status(BAD_REQUEST_STATUS_CODE)
           .json({ message: err.message });
       }
-      res
+      return res
         .status(SERVER_ERROR_STATUS_CODE)
         .json({ message: "An error has occurred on the server." });
     });
