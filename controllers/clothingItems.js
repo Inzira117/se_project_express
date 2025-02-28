@@ -81,8 +81,8 @@ const deleteItem = (req, res) => {
     });
 };
 
-const likeItem = (req, res) => {
-  return clothingItem
+const likeItem = (req, res) =>
+  clothingItem
     .findByIdAndUpdate(
       req.params.itemId,
       { $addToSet: { likes: req.user._id } },
@@ -109,7 +109,6 @@ const likeItem = (req, res) => {
         .status(SERVER_ERROR_STATUS_CODE)
         .json({ message: "likeItem Error" });
     });
-};
 
 const dislikeItem = (req, res) => {
   clothingItem
