@@ -9,12 +9,12 @@ const {
 const getItems = (req, res) => {
   clothingItem
     .find({})
-    .then((items) => res.status(200).send(items))
+    .then((items) => res.send(items))
     .catch((err) => {
       console.error(err);
       return res
         .status(SERVER_ERROR_STATUS_CODE)
-        .send({ message: err.message });
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -30,23 +30,23 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: err.message });
+          .send({ message: "Invalid item ID" });
       }
       return res
         .status(SERVER_ERROR_STATUS_CODE)
-        .send({ message: err.message });
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
 const deleteItem = (req, res) => {
   const userId = req.user._id;
-  const { itemId } = req.params.itemId;
+  const { itemId } = req.params;
 
   clothingItem
     .findById(itemId)
     .orFail(() => {
       const error = new Error("Item not found");
-      error.statusCode = NOT_FOUND_ERROR_CODE; // Use 404 for missing items
+      error.statusCode = NOT_FOUND_ERROR_CODE;
       throw error;
     })
     .then((item) => {
@@ -58,9 +58,7 @@ const deleteItem = (req, res) => {
 
       return clothingItem
         .findByIdAndDelete(itemId)
-        .then(() =>
-          res.status(200).json({ message: "Item successfully deleted" })
-        );
+        .then(() => res.json({ message: "Item successfully deleted" }));
     })
     .catch((err) => {
       console.error(err);
@@ -93,7 +91,7 @@ const likeItem = (req, res) =>
       error.name = "NotFoundError";
       throw error;
     })
-    .then((item) => res.status(200).json({ data: item }))
+    .then((item) => res.json({ data: item }))
     .catch((err) => {
       if (err.name === "NotFoundError") {
         return res
@@ -123,7 +121,7 @@ const dislikeItem = (req, res) => {
       throw error;
     })
     .then((item) => {
-      res.status(200).send({ data: item });
+      res.send({ data: item });
     })
     .catch((err) => {
       if (err.statusCode === NOT_FOUND_ERROR_CODE) {

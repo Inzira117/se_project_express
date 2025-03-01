@@ -10,17 +10,6 @@ const {
   SERVER_ERROR_STATUS_CODE,
 } = require("../utils/errors");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(SERVER_ERROR_STATUS_CODE)
-        .send({ message: "An error has occurred on the server." });
-    });
-};
-
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   if (!email) {
@@ -42,7 +31,7 @@ const createUser = (req, res) => {
     .then((user) => {
       const createdUser = user.toObject();
       delete createdUser.password;
-      return res.status(200).send(createdUser);
+      return res.send(createdUser);
     })
     .catch((err) => {
       console.error(err);
@@ -66,7 +55,7 @@ const getCurrentUser = (req, res) => {
   const userId = req.user._id;
   return User.findById(userId)
     .orFail()
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
@@ -95,13 +84,13 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(200).json({ jwt: token });
+      res.json({ jwt: token });
     })
     .catch((err) => {
       console.error(err);
       if (err.message === "Incorrect email or password") {
         return res
-          .status(BAD_REQUEST_STATUS_CODE)
+          .status(UNAUTHORIZED_STATUS_CODE)
           .send({ message: err.message });
       }
       return res.status(SERVER_ERROR_STATUS_CODE).send({
@@ -127,7 +116,7 @@ const updateCurrentUser = (req, res) => {
           .json({ message: "User not found." });
       }
 
-      return res.status(200).json({
+      return res.json({
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -147,7 +136,6 @@ const updateCurrentUser = (req, res) => {
 };
 
 module.exports = {
-  getUsers,
   createUser,
   getCurrentUser,
   login,
