@@ -6,6 +6,7 @@ const { JWT_SECRET } = require("../utils/config");
 const {
   BAD_REQUEST_STATUS_CODE,
   NOT_FOUND_ERROR_CODE,
+  UNAUTHORIZED_STATUS_CODE,
   CONFLICT_STATUS_CODE,
   SERVER_ERROR_STATUS_CODE,
 } = require("../utils/errors");
