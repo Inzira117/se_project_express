@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 const { UNAUTHORIZED_STATUS_CODE } = require("../utils/errors");
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = (req, res) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
@@ -16,7 +16,6 @@ const authMiddleware = (req, res, next) => {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    return next();
   } catch (err) {
     return res
       .status(UNAUTHORIZED_STATUS_CODE)
