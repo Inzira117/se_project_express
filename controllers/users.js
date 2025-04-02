@@ -4,22 +4,22 @@ const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
 const {
-  BAD_REQUEST_STATUS_CODE,
-  NOT_FOUND_ERROR_CODE,
-  UNAUTHORIZED_STATUS_CODE,
-  CONFLICT_STATUS_CODE,
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+  ConflictError,
 } = require("../utils/errors");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
   if (!email) {
-    return next(new BAD_REQUEST_STATUS_CODE("Email is required"));
+    return next(new BadRequestError("Email is required"));
   }
 
   return User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
-        throw new CONFLICT_STATUS_CODE("Failed Request: Email already exists.");
+        return next(new ConflictError("Failed Request: Email already exists."));
       }
       return bcrypt.hash(password, 10);
     })
@@ -36,7 +36,7 @@ const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
   return User.findById(userId)
     .orFail(() => {
-      throw new NOT_FOUND_ERROR_CODE("User not found");
+      throw new NotFoundError("User not found");
     })
     .then((user) => res.send(user))
     .catch(next);
@@ -46,7 +46,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new BAD_REQUEST_STATUS_CODE("Email and password required"));
+    return next(new BadRequestError("Email and password required"));
   }
 
   return User.findUserByCredentials(email, password)
@@ -56,9 +56,7 @@ const login = (req, res, next) => {
       });
       res.json({ jwt: token });
     })
-    .catch(() =>
-      next(new UNAUTHORIZED_STATUS_CODE("Incorrect email or password"))
-    );
+    .catch(() => next(new UnauthorizedError("Incorrect email or password")));
 };
 
 const updateCurrentUser = (req, res, next) => {
@@ -73,7 +71,7 @@ const updateCurrentUser = (req, res, next) => {
     .select("+password")
     .then((user) => {
       if (!user) {
-        return next(new NOT_FOUND_ERROR_CODE("User not found."));
+        return next(new NotFoundError("User not found."));
       }
 
       return res.json({
@@ -85,7 +83,7 @@ const updateCurrentUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(new BAD_REQUEST_STATUS_CODE(err.message));
+        next(new BadRequestError(err.message));
       } else {
         next(err);
       }
