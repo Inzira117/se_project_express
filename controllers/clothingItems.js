@@ -1,9 +1,9 @@
 const clothingItem = require("../models/clothingItem");
 const {
-  BAD_REQUEST_STATUS_CODE,
-  FORBIDDEN_STATUS_CODE,
-  NOT_FOUND_ERROR_CODE,
-  SERVER_ERROR_STATUS_CODE,
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+  ServerError,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
@@ -13,7 +13,7 @@ const getItems = (req, res) => {
     .catch((err) => {
       console.error(err);
       return res
-        .status(SERVER_ERROR_STATUS_CODE)
+        .status(ServerError)
         .send({ message: "An error has occurred on the server" });
     });
 };
@@ -28,12 +28,10 @@ const createItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "Invalid item ID" });
+        return res.status(BadRequestError).send({ message: "Invalid item ID" });
       }
       return res
-        .status(SERVER_ERROR_STATUS_CODE)
+        .status(ServerError)
         .send({ message: "An error has occurred on the server" });
     });
 };
@@ -46,12 +44,12 @@ const deleteItem = (req, res) => {
     .findById(itemId)
     .orFail(() => {
       const error = new Error("Item not found");
-      error.statusCode = NOT_FOUND_ERROR_CODE;
+      error.statusCode = NotFoundError;
       throw error;
     })
     .then((item) => {
       if (item.owner.toString() !== userId) {
-        return res.status(FORBIDDEN_STATUS_CODE).json({
+        return res.status(ForbiddenError).json({
           message: "Forbidden: You are not the owner of this item.",
         });
       }
@@ -64,18 +62,12 @@ const deleteItem = (req, res) => {
       console.error(err);
 
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .json({ message: "Invalid item ID" }); // 400 for invalid format
+        return res.status(BadRequestError).json({ message: "Invalid item ID" }); // 400 for invalid format
       }
-      if (err.statusCode === NOT_FOUND_ERROR_CODE) {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .json({ message: "Item not found" }); // 404 for missing items
+      if (err.statusCode === NotFoundError) {
+        return res.status(NotFoundError).json({ message: "Item not found" }); // 404 for missing items
       }
-      return res
-        .status(SERVER_ERROR_STATUS_CODE)
-        .json({ message: "Internal server error" });
+      return res.status(ServerError).json({ message: "Internal server error" });
     });
 };
 
@@ -94,18 +86,12 @@ const likeItem = (req, res) =>
     .then((item) => res.json({ data: item }))
     .catch((err) => {
       if (err.name === "NotFoundError") {
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .json({ message: "Item not found" });
+        return res.status(NotFoundError).json({ message: "Item not found" });
       }
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .json({ message: "Invalid Item Id" });
+        return res.status(BadRequestError).json({ message: "Invalid Item Id" });
       }
-      return res
-        .status(SERVER_ERROR_STATUS_CODE)
-        .json({ message: "likeItem Error" });
+      return res.status(ServerError).json({ message: "likeItem Error" });
     });
 
 const dislikeItem = (req, res) => {
@@ -117,23 +103,19 @@ const dislikeItem = (req, res) => {
     )
     .orFail(() => {
       const error = new Error("Item ID not found");
-      error.statusCode = NOT_FOUND_ERROR_CODE;
+      error.statusCode = NotFoundError;
       throw error;
     })
     .then((item) => {
       res.send({ data: item });
     })
     .catch((err) => {
-      if (err.statusCode === NOT_FOUND_ERROR_CODE) {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
+      if (err.statusCode === NotFoundError) {
+        res.status(NotFoundError).send({ message: err.message });
       } else if (err.name === "CastError") {
-        res
-          .status(BAD_REQUEST_STATUS_CODE)
-          .send({ message: "Invalid Item Id" });
+        res.status(BadRequestError).send({ message: "Invalid Item Id" });
       } else {
-        res
-          .status(SERVER_ERROR_STATUS_CODE)
-          .send({ message: "likeItem Error" });
+        res.status(ServerError).send({ message: "likeItem Error" });
       }
     });
 };
