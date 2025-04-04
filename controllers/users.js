@@ -12,6 +12,9 @@ const {
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
+
+  console.log({ name, avatar, email, password });
+
   if (!email) {
     return next(new BadRequestError("Email is required"));
   }
@@ -19,7 +22,8 @@ const createUser = (req, res, next) => {
   return User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
-        return next(new ConflictError("Failed Request: Email already exists."));
+        console.log("existingUser", existingUser);
+        throw new ConflictError("Failed Request: Email already exists.");
       }
       return bcrypt.hash(password, 10);
     })
