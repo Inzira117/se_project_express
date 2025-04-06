@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const { UnauthorizedError } = require("../utils/errors");
+const { UnauthorizedError } = require("../utils/UnauthorisedError");
 
 const authMiddleware = (req, res, next) => {
   const { authorization } = req.headers;
@@ -16,9 +16,9 @@ const authMiddleware = (req, res, next) => {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
+    return next();
   } catch (err) {
-    return res.status(UnauthorizedError).send({ message: "Invalid token" });
+    return next(new UnauthorizedError("Authorization required"));
   }
 };
 

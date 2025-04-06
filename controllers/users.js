@@ -3,12 +3,10 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
-const {
-  BadRequestError,
-  NotFoundError,
-  UnauthorizedError,
-  ConflictError,
-} = require("../utils/errors");
+const { BadRequestError } = require("../utils/BadRequestError");
+const { NotFoundError } = require("../utils/NotFoundError");
+const { UnauthorizedError } = require("../utils/UnauthorisedError");
+const { ConflictError } = require("../utils/ConflictError");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -33,7 +31,13 @@ const createUser = (req, res, next) => {
       delete createdUser.password;
       return res.send(createdUser);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError(err.message));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const getCurrentUser = (req, res, next) => {

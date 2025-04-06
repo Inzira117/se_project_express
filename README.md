@@ -1,5 +1,7 @@
 # WTWR (What to Wear?): Back End
 
+Domen name: api.wtwrapp.minecraftnoob.com
+
 The back-end project is focused on creating a server for the WTWR application. This application reads actual user's location and shows appropriate clothes items to weat for current weather.
 
 This application was created using JavaScript, Express, Mongoose, Postman.
