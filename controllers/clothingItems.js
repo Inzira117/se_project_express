@@ -43,9 +43,9 @@ const deleteItem = (req, res, next) => {
     })
     .then((item) => {
       if (item.owner.toString() !== userId) {
-        return res.status(ForbiddenError).json({
-          message: "Forbidden: You are not the owner of this item.",
-        });
+        return next(
+          new ForbiddenError("Forbidden: You are not the owner of this item.")
+        );
       }
 
       return clothingItem
@@ -55,10 +55,10 @@ const deleteItem = (req, res, next) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return next({ status: BadRequestError, message: "Invalid item ID" });
+        return next(new BadRequestError("Invalid item ID"));
       }
       if (err.statusCode === NotFoundError) {
-        return next(new NotFoundError(), "Item not found");
+        return next(new NotFoundError("Item not found"));
       }
       return next(new ServerError("Internal server error"));
     });
