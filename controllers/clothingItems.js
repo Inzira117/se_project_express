@@ -79,12 +79,12 @@ const likeItem = (req, res, next) => {
     .then((item) => res.json({ data: item }))
     .catch((err) => {
       if (err.name === "NotFoundError") {
-        return next(new NotFoundError(), "Item not found");
+        return next(new NotFoundError("Item not found"));
       }
       if (err.name === "CastError") {
-        return next(new BadRequestError(), "Invalid Item ID");
+        return next(new BadRequestError("Invalid Item ID"));
       }
-      return next(new ServerError(), "likeItem Error");
+      return next(new ServerError("likeItem Error"));
     });
 };
 
@@ -105,12 +105,12 @@ const dislikeItem = (req, res, next) => {
     })
     .catch((err) => {
       if (err.statusCode === NotFoundError) {
-        return next(new NotFoundError(), "Item not found");
+        return next(new NotFoundError("Item not found"));
       }
       if (err.name === "CastError") {
-        return next(new BadRequestError(), "Invalid Item ID");
+        return next(new BadRequestError("Invalid Item ID"));
       }
-      return next(new ServerError(), "dislikeItem Error");
+      return next(new ServerError("dislikeItem Error"));
     });
 };
 
